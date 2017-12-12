@@ -33,8 +33,8 @@ public struct XMLElement {
     
 //    public var index: Int
     
-    public var count: Int?{
-        return childElement?.count
+    public var count: Int{
+        return childElement.count
     }
     
     init(name: String,
@@ -45,7 +45,9 @@ public struct XMLElement {
         self.name = name
         self.text = text
         self.attributes = attributes
-        self.childElement = childElement
+        if let child = childElement {
+            self.childElement = child
+        }
     }
     
     public func attribute(name: String) -> XMLAttribute?{
@@ -53,10 +55,7 @@ public struct XMLElement {
     }
     
     mutating func addElement(child: XMLElement){
-        if self.childElement == nil{
-            self.childElement = []
-        }
-        self.childElement!.append(child)
+        childElement.append(child)
     }
     
     @discardableResult
@@ -70,10 +69,7 @@ public struct XMLElement {
                                  text: text,
                                  childElement: childElement)
         
-        if self.childElement == nil{
-            self.childElement = []
-        }
-        self.childElement!.append(element)
+        addElement(child: element)
         return element
     }
     
@@ -94,9 +90,17 @@ extension XMLElement: CustomStringConvertible{
         
         let separator:String
         
-        if let child = childElement {
+        if childElement.isEmpty {
             
-            for item in child {
+            separator = ""
+            
+            if let text = self.text {
+                description.insert(text, at: 1)
+            }
+            
+        }else{
+            
+            for item in childElement {
                 description.append("  \(item.description)")
             }
             
@@ -106,12 +110,6 @@ extension XMLElement: CustomStringConvertible{
                 description.insert("  \(text)", at: 1)
             }
             
-        }else{
-            separator = ""
-            
-            if let text = self.text {
-                description.insert(text, at: 1)
-            }
         }
         
         description.append("</\(name)>")
