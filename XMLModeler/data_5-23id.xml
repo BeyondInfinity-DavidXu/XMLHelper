@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+	<root>
+		<root_line>
+            <serieId>s1</serieId>
+			<bgSelectedImage>womenblank</bgSelectedImage>
+			<normalImage>seriesacqua1</normalImage>
+			<subtitle>犹如一缕永恒、快乐的生命之光</subtitle>
+			<name>新寄情系列</name>
+			<largeImage>acqua banner</largeImage>
+			<people>女士香水</people>
+			<headline>从水、空气和阳光中绽放新生</headline>
+			<logoImage>serieacqua</logoImage>
+			<video>AcquadiGioiaedt</video>
+			<selectedImage>seriesacqua2</selectedImage>
+		</root_line>
+		<root_line>
+            <serieId>s2</serieId>
+			<bgSelectedImage>womenblank</bgSelectedImage>
+			<normalImage>code1</normalImage>
+			<subtitle>神秘、高雅、繁复、令人着迷</subtitle>
+			<name>阿玛尼印记系列</name>
+			<largeImage>code banner</largeImage>
+			<people>女士香水</people>
+			<headline>展现ARMANI性感的精髓</headline>
+			<logoImage>seriescode</logoImage>
+			<video>ArmaniCodeforWomen</video>
+			<selectedImage>code2</selectedImage>
+		</root_line>
+		<root_line>
+            <serieId>s3</serieId>
+			<bgSelectedImage>womenblank</bgSelectedImage>
+			<normalImage>si1</normalImage>
+			<subtitle>优雅自信,充满勇气,表达真实</subtitle>
+			<name>挚爱香水系列</name>
+			<largeImage>si banner</largeImage>
+			<people>女士香水</people>
+			<headline>浓情诠释每一位女性的美   </headline>
+			<logoImage>seriesi</logoImage>
+			<video>siedp</video>
+			<selectedImage>si2</selectedImage>
+		</root_line>
+        <root_line>
+            <serieId>s4</serieId>
+            <bgSelectedImage>womenblank</bgSelectedImage>
+            <normalImage>mania1</normalImage>
+            <subtitle>独立的女性，自我肯定、自由、满足</subtitle>
+            <name>阿玛尼曼尼系列</name>
+            <largeImage>largemania</largeImage>
+            <people>女士香水</people>
+            <headline>微笑面对生活，焕发生命力</headline>
+            <logoImage>seriemania</logoImage>
+            <video>ArmaniMania</video>
+            <selectedImage>mania2</selectedImage>
+        </root_line>
+        <root_line>
+            <serieId>s5</serieId>
+            <bgSelectedImage>manblank</bgSelectedImage>
+            <normalImage>manacqua1</normalImage>
+            <subtitle>激荡澎湃的大海与明亮无边的天空”</subtitle>
+            <name>寄情香水系列</name>
+            <largeImage>manacqua background</largeImage>
+            <people>男士香水</people>
+            <headline>充满对健康生活的向往</headline>
+            <logoImage>serieacqua</logoImage>
+            <video>AcquadiGio</video>
+            <selectedImage>manacqua2</selectedImage>
+        </root_line>
+<!--        <root_line>-->
+<!--            <serieId>s6</serieId>-->
+<!--            <bgSelectedImage>manblank</bgSelectedImage>-->
+<!--            <normalImage>manmania1</normalImage>-->
+<!--            <subtitle>Armani的精髓，高贵与性感的象征</subtitle>-->
+<!--            <name>阿玛尼曼尼系列</name>-->
+<!--            <largeImage>manmania background</largeImage>-->
+<!--            <people>男士香水</people>-->
+<!--            <headline>演绎男性的刚劲活力</headline>-->
+<!--            <logoImage>seriemania</logoImage>-->
+<!--            <video>ArmaniMania</video>-->
+<!--            <selectedImage>manmania2</selectedImage>-->
+<!--        </root_line>-->
+<!--        <root_line>-->
+<!--            <serieId>s7</serieId>-->
+<!--            <bgSelectedImage>manblank</bgSelectedImage>-->
+<!--            <normalImage>mancode1</normalImage>-->
+<!--            <subtitle>充满男子气概，焕发令人无法抗拒的魔力</subtitle>-->
+<!--            <name>阿玛尼印记系列</name>-->
+<!--            <largeImage>mancode background</largeImage>-->
+<!--            <people>男士香水</people>-->
+<!--            <headline>源自好莱坞成功、魅力的男香</headline>-->
+<!--            <logoImage>seriescode</logoImage>-->
+<!--            <video>Code</video>-->
+<!--            <selectedImage>mancode2</selectedImage>-->
+<!--        </root_line>-->
+<!--        <root_line>-->
+<!--            <serieId>s8</serieId>-->
+<!--            <bgSelectedImage>manblank</bgSelectedImage>-->
+<!--            <normalImage>manhomme1</normalImage>-->
+<!--            <subtitle>时而充满阳刚、时而优雅宁静、时而阳光自信</subtitle>-->
+<!--            <name>本色系列</name>-->
+<!--            <largeImage>manmania background</largeImage>-->
+<!--            <people>男士香水</people>-->
+<!--            <headline>阿玛尼的第一款香水</headline>-->
+<!--            <logoImage>seriearmani</logoImage>-->
+<!--            <video>ArmaniEauPourHomme</video>-->
+<!--            <selectedImage>manhomme2</selectedImage>-->
+<!--        </root_line>-->
+<!--        <root_line>-->
+<!--            <serieId>s9</serieId>-->
+<!--            <bgSelectedImage>usblank</bgSelectedImage>-->
+<!--            <normalImage>emporior armani1</normalImage>-->
+<!--            <subtitle>追求亲密、相互融合的自然渴望</subtitle>-->
+<!--            <name>阿玛尼他她系列</name>-->
+<!--            <largeImage>emporior armani background</largeImage>-->
+<!--            <people>情侣香水</people>-->
+<!--            <headline>第二层肌肤般的香氛</headline>-->
+<!--            <logoImage>serieemporiorarmani</logoImage>-->
+<!--            <video>ArmaniEmporioShe&amp;He</video>-->
+<!--            <selectedImage>emporior armani2</selectedImage>-->
+<!--        </root_line>-->
+<!--        <root_line>-->
+<!--            <serieId>s10</serieId>-->
+<!--            <bgSelectedImage>usblank</bgSelectedImage>-->
+<!--            <normalImage>cityglam1</normalImage>-->
+<!--            <subtitle>散发时尚、令人兴奋的都市魅力</subtitle>-->
+<!--            <name>阿玛尼都会系列</name>-->
+<!--            <largeImage>cityglam background</largeImage>-->
+<!--            <people>情侣香水</people>-->
+<!--            <headline>时尚、令人兴奋</headline>-->
+<!--            <logoImage>seriecityglam</logoImage>-->
+<!--            <video>cityglam</video>-->
+<!--            <selectedImage>cityglam2</selectedImage>-->
+<!--        </root_line>-->
+	</root>

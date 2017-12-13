@@ -8,6 +8,37 @@
 
 import UIKit
 
+public class XMLModeler {
+    
+    public struct ParserOptions {
+        
+        public var shouldProessLazy = false
+        
+        public var shouldProcessNamespaces = false
+        
+        public var shouldReportNamespacePrefixes = false
+        
+        public var shouldResolveExternalEntities = false
+        
+        public var encoding = String.Encoding.utf8
+    }
+    
+    public typealias ConfigAction = (inout ParserOptions) -> Void
+    
+    public let options: ParserOptions
+    
+    public init(_ options: ParserOptions){
+        self.options = options
+    }
+    
+    public class func config(_ configAction: ConfigAction) -> XMLModeler{
+        var options = ParserOptions()
+        configAction(&options)
+        return XMLModeler(options)
+    }
+    
+}
+
 
 
 public struct XMLAttribute {
@@ -21,102 +52,108 @@ extension XMLAttribute: CustomStringConvertible{
     }
 }
 
-public struct XMLElement {
+public class XMLElement {
     
     public let name: String
     
-    public var text: String?
+    public let index: Int
     
-    public var attributes: [String: XMLAttribute]?
+    public var text: String = ""
     
     public var childElement:[XMLElement] = []
     
-//    public var index: Int
+    public var attributes: [String: XMLAttribute] = [:]
     
-    public var count: Int{
-        return childElement.count
-    }
-    
-    init(name: String,
-         attributes:[String: XMLAttribute]?,
-         text: String?,
-         childElement: [XMLElement]?)
-    {
+    init(name: String, index: Int = 0){
         self.name = name
-        self.text = text
-        self.attributes = attributes
-        if let child = childElement {
-            self.childElement = child
-        }
+        self.index = index
     }
     
     public func attribute(name: String) -> XMLAttribute?{
-        return attributes?[name]
+        return attributes[name]
     }
     
-    mutating func addElement(child: XMLElement){
-        childElement.append(child)
-    }
-    
-    @discardableResult
-    mutating func addEelement(name: String,
-                              attributes: [String: XMLAttribute]?,
-                              text: String?,
-                              childElement: [XMLElement]?) -> XMLElement
-    {
-        let element = XMLElement(name: name,
-                                 attributes: attributes,
-                                 text: text,
-                                 childElement: childElement)
+    func addChildEelement(name: String, index: Int,attributes: [String: String]) -> XMLElement {
         
-        addElement(child: element)
+        let element = XMLElement(name: name, index: index)
+        
+        childElement.append(element)
+        
+        for (key, value) in attributes {
+            element.attributes[key] = XMLAttribute(name: key, text: value)
+        }
+        
         return element
     }
     
 }
 
-extension XMLElement: CustomStringConvertible{
-    public var description: String{
-        
-        var description = [String]()
-        
-        var startTag = name
-        
-        if let attributes = self.attributes {
-            startTag += attributes.reduce(""){ $0 + " " + $1.value.description}
-        }
-        
-        description.append("<\(startTag)>")
-        
-        let separator:String
-        
-        if childElement.isEmpty {
-            
-            separator = ""
-            
-            if let text = self.text {
-                description.insert(text, at: 1)
-            }
-            
-        }else{
-            
-            for item in childElement {
-                description.append("  \(item.description)")
-            }
-            
-            separator = "\n"
-            
-            if let text = self.text {
-                description.insert("  \(text)", at: 1)
-            }
-            
-        }
-        
-        description.append("</\(name)>")
-        
-        return description.joined(separator: separator)
+struct Stack<Element> {
+    
+    var items = [Element]()
+    
+    mutating func push(_ item: Element){
+        items.append(item)
+    }
+    
+    mutating func pop() -> Element {
+        return items.removeLast()
+    }
+    
+    var top:Element{
+        return items.last!
+    }
+    
+    mutating func removeAll(){
+        items.removeAll(keepingCapacity: false)
     }
 }
+
+
+public let RootElementName = "XMLModelerParserRootElementName"
+
+public class XMLModelerParser: NSObject, XMLParserDelegate{
+    
+    var root = XMLElement(name: RootElementName)
+    
+    var parentStack = Stack<XMLElement>()
+    
+    func parse(_ data: Data) -> XMLElement {
+        
+        parentStack.removeAll()
+        
+        parentStack.push(root)
+        
+        let parser = XMLParser(data: data)
+        parser.delegate = self
+        parser.parse()
+        return root
+    }
+    
+    public func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String] = [:]) {
+        
+        let index = parentStack.items.count
+        
+        let currentNode = parentStack.top.addChildEelement(name: elementName, index: index, attributes: attributeDict)
+        
+        parentStack.push(currentNode)
+    
+    }
+    
+    public func parser(_ parser: XMLParser, foundCharacters string: String) {
+
+        parentStack.top.text += string
+        
+    }
+    
+    public func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
+        
+        _ = parentStack.pop()
+    }
+    
+    
+}
+
 
 
 
