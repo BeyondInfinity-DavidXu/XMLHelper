@@ -14,16 +14,41 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         
-    }
-
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        let xmlWithNamespace = """
+  <root xmlns:h=\"http://www.w3.org/TR/html4/\"
+    xmlns:f=\"http://www.w3schools.com/furniture\">
+    <h:table>
+      <h:tr>
+        <h:td>Apples</h:td>
+        <h:td>Bananas</h:td>
+      </h:tr>
+    </h:table>
+    <f:table>
+      <f:name>African Coffee Table</f:name>
+      <f:width>80</f:width>
+      <f:length>120</f:length>
+    </f:table>
+  </root>
+"""
+        
+        
         let url = Bundle.main.url(forResource: "data_5-23id", withExtension: "xml")
         
-        let data = try! Data(contentsOf: url!)
         
-        let _ = XMLModelerParser().parse(data)
+        
+        let model = XMLModel(data: try? Data(contentsOf: url!))
+        
+        print(model)
+        
+
+        
+        
+        
+        
+        
     }
 
+    
 
 }
 
