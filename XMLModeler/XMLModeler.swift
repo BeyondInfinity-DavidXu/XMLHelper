@@ -8,35 +8,64 @@
 
 import UIKit
 
+/// Use the XMLModel the possibility of error
+public enum XMLModelError: Error{
+    case `default`
+    case unsupportKey
+    case wrongKey
+    case unknowInitValue
+    case outOfIndex
+    case unsupportIndex
+    case noEelement
+}
+
+extension XMLModelError: CustomNSError{
+    public static var errorDomain: String{ return "XMLModel_Error" }
+    
+    public var errorUserInfo: [String : Any]{
+        switch self {
+        case .default:
+            return [NSLocalizedDescriptionKey: "the default error"]
+        case .unsupportKey:
+            return [NSLocalizedDescriptionKey: "the current level of xml is list,The key is not supported"]
+        case .unsupportIndex:
+            return [NSLocalizedDescriptionKey: "the current level of xml is single,The index is not supported"]
+        case .wrongKey:
+            return [NSLocalizedDescriptionKey: "the key is not the current element name"]
+        case .unknowInitValue:
+            return [NSLocalizedDescriptionKey: "the value is not the XMLModel Init acceptable"]
+        case .outOfIndex:
+            return [NSLocalizedDescriptionKey: "the index value out of index"]
+        case .noEelement:
+            return [NSLocalizedDescriptionKey: "Current XMLModel has no element"]
+        }
+    }
+}
+/**
+ 当前错误处理方式来自SwiftyJSON,实际上缺少错误处理的方式，这种错误处理的方式缺少反馈，不能准确的定位错误，只是提供了大概的错误方向
+ */
+
+/// Used for packaging, parsing, and obtain the XML data
 public class XMLModel {
     
-    public struct ParseOptions: OptionSet{
-        public let rawValue: UInt
-        public init(rawValue: UInt){ self.rawValue = rawValue }
-        public static let shouldProcessNamespaces = ParseOptions(rawValue: 0)
-        
+    private enum RawType {
+        case list,single,error
     }
     
-    enum RawType {
-        case list,single,null
-    }
+    private var rawType: RawType = .error
+    private var rawlist:[XMLElement] = []
+    private var rawSingle:XMLElement = XMLElement(name: "")
+    private var error: XMLModelError = .default
     
-    var rawType: RawType = .null
-    
-    var rawlist:[XMLElement] = []
-    var rawSingle:XMLElement = XMLElement(name: "")
-    var rawNull = NSNull()
-    
-    
-    var rootValue: Any{
+    private var rootValue: Any{
         get{
             switch rawType {
             case .list:
                 return rawlist
             case .single:
                 return rawSingle
-            case .null:
-                return rawNull
+            case .error:
+                return error
             }
         }
         set{
@@ -47,66 +76,116 @@ public class XMLModel {
             case let list as [XMLElement]:
                 rawlist = list
                 rawType = .list
+            case let error as XMLModelError:
+                rawType = .error
+                self.error = error
             default:
-                rawNull = NSNull()
-                rawType = .null
+                rawType = .error
+                error = XMLModelError.unknowInitValue
             }
-            
         }
     }
-    
 
-    public init(data: Data?, options: ParseOptions = []){
-        if let data = data {
-            
-            let original = XMLModelerParser().parse(data: data, options: options).childElement
-            if original.count == 1{
-                rootValue = original[0]
-            }else if original.count > 1 {
-                rootValue = original
-            }
-        }else{
-            /// handle the data is nil error
-            fatalError("The data is nil")
-        }
-    }
-    
-    public convenience init(xmlString: String, options: ParseOptions = []){
-        let data = xmlString.data(using: .utf8)
-        self.init(data: data, options: options)
-    }
-    
-    init(rootValue:Any){
+    private init(rootValue:Any){
         self.rootValue = rootValue
     }
+}
+
+extension XMLModel {
+    
+    /// Used to set the resolution options, currently only support shouldProcessNamespaces
+    public struct ParseOptions: OptionSet{
+        public let rawValue: UInt
+        public init(rawValue: UInt){ self.rawValue = rawValue }
+        public static let shouldProcessNamespaces = ParseOptions(rawValue: 0)
+    }
+    
+    /// The core init func
+    public convenience init(data: Data, options: ParseOptions = []){
+        let root = XMLModelParser().parse(data: data, options: options)
+        self.init(rootValue: root)
+    }
+}
+/**
+ 当前的初始化方法只有最核心的方法，后期会加入一些更加便捷的方法，同时也会带来更多的错误，在错误处理没有完全准备好之前，只提供最核心的初始化方法，这其中的错误处理也就交给了使用者
+ */
+
+/// subscript
+extension XMLModel{
     
     public subscript(key: String) -> XMLModel {
-        if rawType == .list && !rawlist.contains(where: { $0.name != key }){
-            return self     
-        }else if rawType == .single && rawSingle.name == key{
-            let new = XMLModel(rootValue: rawSingle.childElement.map{ $0.copy() })
-            new.filterElements{ $0.index -= 1 }
-            return new
-        }else{
-            fatalError("chect out the key")
+        switch rawType{
+        case .single:
+            let match = rawSingle.childElement.filter{ $0.name == key }
+            let copyMatch = match.map{ $0.copy() as! XMLElement }
+            copyMatch.forEach{ $0.filterThorough{ $0.index -= 1 } }
+            if copyMatch.count == 1 {
+                return XMLModel(rootValue: copyMatch[0])
+            }else if copyMatch.count > 1 {
+                return XMLModel(rootValue: copyMatch)
+            }else{
+                return XMLModel(rootValue: XMLModelError.wrongKey)
+            }
+        default:
+            return XMLModel(rootValue: XMLModelError.unsupportKey)
         }
     }
     
     public subscript(index: Int) -> XMLModel{
-        if rawType == .list && rawlist.count > index{
-            return XMLModel(rootValue: rawlist[index])
-        }else{
-            fatalError("chect out the index")
+        switch rawType{
+        case .list:
+            if rawlist.count > index{
+                return XMLModel(rootValue: rawlist[index])
+            }else{
+                return XMLModel(rootValue: XMLModelError.outOfIndex)
+            }
+        default:
+            return XMLModel(rootValue: XMLModelError.unsupportIndex)
         }
     }
     
-    func filterElements(_ operate: (XMLElement) -> ()) {
-        if rawType == .single {
+    private func filterElements(_ operate: (XMLElement) -> ()) {
+        switch rawType {
+        case .single:
             rawSingle.filterThorough(operate)
-        }else if rawType == .list{
+        case .list:
             rawlist.forEach{ $0.filterThorough(operate) }
+        case .error:
+            fatalError(error.localizedDescription)
+        }
+    }
+    
+    public var element: XMLElement{
+        switch rawType {
+        case .single:
+            return rawSingle
+        default:
+            fatalError(XMLModelError.noEelement.localizedDescription)
+        }
+    }
+    
+    public var elementValue: XMLElement?{
+        switch rawType {
+        case .single:
+            return rawSingle
+        default:
+            return nil
+        }
+    }
+    
+    public var text: String{
+        if element.text.isEmpty {
+            fatalError("The element has no text")
         }else{
-            fatalError("handle the error")
+            return element.text
+        }
+    }
+    
+    public var textValue: String?{
+        if element.text.isEmpty {
+            return nil
+        }else{
+            return element.text
         }
     }
     
@@ -115,30 +194,52 @@ public class XMLModel {
 extension XMLModel: CustomStringConvertible{
     
     public var description: String{
-        if rawType == .single {
+        switch rawType {
+        case .single:
             return self.rawSingle.description
-        }else if rawType == .list{
+        case .list:
             var string = [String]()
             rawlist.forEach{ string.append($0.description) }
             return string.joined(separator: "\n")
-        }else{
-            fatalError("")
+        case .error:
+            return error.localizedDescription
         }
     }
 }
 
-
-public let RootElementName = "XMLModelerParserRootElementName"
-
-public class XMLModelerParser: NSObject, XMLParserDelegate{
+/// Real XML parsing, the class implements the necessary XMLParserDelegate method
+fileprivate class XMLModelParser: NSObject, XMLParserDelegate{
     
-    fileprivate var root = XMLElement(name: RootElementName)
+    struct Stack<Element> {
+        
+        var items = [Element]()
+        
+        mutating func push(_ item: Element){
+            items.append(item)
+        }
+        
+        mutating func pop() -> Element {
+            return items.removeLast()
+        }
+        
+        var top:Element{
+            return items.last!
+        }
+        
+        mutating func removeAll(){
+            items.removeAll(keepingCapacity: false)
+        }
+    }
+    
+    private let RootElementName = "XMLModelerParserRootElementName"
     
     private var parentStack = Stack<XMLElement>()
     
     func parse(data: Data, options:XMLModel.ParseOptions) -> XMLElement {
         
         parentStack.removeAll()
+        
+        let root = XMLElement(name: RootElementName)
         
         parentStack.push(root)
         
@@ -155,36 +256,29 @@ public class XMLModelerParser: NSObject, XMLParserDelegate{
         return root
     }
     
-    public func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String] = [:]) {
-        
+    func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String] = [:]) {
         let index = parentStack.items.count
-        
         let currentNode = parentStack.top.addChildEelement(name: elementName, index: index, attributes: attributeDict)
-        
         parentStack.push(currentNode)
-        
     }
     
-    public func parser(_ parser: XMLParser, foundCharacters string: String) {
-        
+    func parser(_ parser: XMLParser, foundCharacters string: String) {
         if let first = string.first,first != "\n" {
             parentStack.top.text += string
         }
-        
     }
     
-    public func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
-        
+    func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
         _ = parentStack.pop()
     }
-    
-    
 }
 
 
-
+/// The XML element attribute model
 public struct XMLAttribute {
+    /// The name of the attribute
     public let name: String
+    /// The text of the attribute
     public let text: String
 }
 
@@ -194,35 +288,38 @@ extension XMLAttribute: CustomStringConvertible{
     }
 }
 
-
-/**
- XML 元素模型
- 如何将XML元素模型化 ？
- 
- */
+/// The XML element model
 public class XMLElement {
     
-    /// 该属性默认是不变的，为了准守NSCopying协议而改成可变
+    /**
+     The name of the element,
+     the name default is let, in order to follow the NSCopying protocol into a variable
+     */
     public var name: String
-    /// 该属性初始认为是不可变，由于支持XMLModel进行unwrap处理，为了重新调整层级关系改为可变
+    
+    /// The hierarchy of elements
     public var index: Int
     
+    /// The text of the element, if it not exists,the string is empty
     public var text: String = ""
     
+    /// The child elements of the element, if it not exists,the array is empty
     public var childElement:[XMLElement] = []
     
+    /// The attributes of the element,if it not exists,the dictionary is empty
     public var attributes: [String: XMLAttribute] = [:]
     
-    init(name: String, index: Int = 0){
-        self.name = name
-        self.index = index
-    }
-    
+    /// The specify name attribute
     public func attribute(name: String) -> XMLAttribute?{
         return attributes[name]
     }
     
-    func addChildEelement(name: String, index: Int,attributes: [String: String]) -> XMLElement {
+    fileprivate init(name: String, index: Int = 0){
+        self.name = name
+        self.index = index
+    }
+    
+    fileprivate func addChildEelement(name: String, index: Int,attributes: [String: String]) -> XMLElement {
         
         let element = XMLElement(name: name, index: index)
         
@@ -235,6 +332,10 @@ public class XMLElement {
         return element
     }
     
+    fileprivate func filterThorough(_ operate: (XMLElement) -> ()) {
+        operate(self)
+        childElement.forEach{ $0.filterThorough(operate) }
+    }
 }
 
 extension XMLElement: NSCopying{
@@ -258,17 +359,17 @@ extension XMLElement: CustomStringConvertible{
         
         let attributesString = attributes.reduce("", { $0 + " " + $1.1.description })
         
-        var startTag = String(repeating: "    ", count: index-1) + "<\(name)\(attributesString)>"
+        var startTag = String(repeating: "    ", count: index) + "<\(name)\(attributesString)>"
         if !childElement.isEmpty { startTag += "\n"}
         
         var endTag: String
         if childElement.isEmpty {
             endTag = "</\(name)>"
         }else{
-            endTag = String(repeating: "    ", count: index-1) + "</\(name)>"
+            endTag = String(repeating: "    ", count: index) + "</\(name)>"
         }
         
-        if !(index == 1) { endTag += "\n" }
+        if !(index == 0) { endTag += "\n" }
         
         if childElement.isEmpty {
             return startTag + text + endTag
@@ -278,35 +379,11 @@ extension XMLElement: CustomStringConvertible{
         }
     }
     
-    func filterThorough(_ operate: (XMLElement) -> ()) {
-        operate(self)
-        childElement.forEach{ $0.filterThorough(operate) }
-    }
-    
 }
 
 
 
-struct Stack<Element> {
-    
-    var items = [Element]()
-    
-    mutating func push(_ item: Element){
-        items.append(item)
-    }
-    
-    mutating func pop() -> Element {
-        return items.removeLast()
-    }
-    
-    var top:Element{
-        return items.last!
-    }
-    
-    mutating func removeAll(){
-        items.removeAll(keepingCapacity: false)
-    }
-}
+
 
 
 
