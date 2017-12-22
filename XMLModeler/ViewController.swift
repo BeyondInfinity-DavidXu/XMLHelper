@@ -53,11 +53,13 @@ class ViewController: UIViewController, XMLParserDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let xmlData = xmlWithNamespace.data(using: .utf8)!
+        let model = XMLModel.parse(xmlfile: "data_5-23id")
         
-        let model = XMLModel(data: xmlData, options: .shouldProcessNamespaces)
         
-        print(model["root"]["table"][1]["name"].text)
+        
+        
+    
+        
     }
     
     
