@@ -1,10 +1,8 @@
 //
-//  XMLModeler.swift
-//  SwiftSyntaxPractise
+//  XMLModel.swift
+//  XMLModel
 //
-//  Created by 徐伟亭 on 2017/12/12.
-//  Copyright © 2017年 TerraNova. All rights reserved.
-//
+//  Created by GeekXiaowei on 2017/12/12.
 
 import UIKit
 
@@ -21,7 +19,7 @@ fileprivate protocol Stackable {
 }
 
 /// A stack for parse the xml elemnt
-fileprivate struct Stack: Stackable {
+fileprivate struct XMLParseStack: Stackable {
     
     private var items: [XMLElement] = []
     
@@ -48,19 +46,23 @@ fileprivate struct Stack: Stackable {
         items.removeAll(keepingCapacity: false)
     }
     
+    /// The count of stack items
     fileprivate var count: Int{
         return items.count
     }
 }
 
-
+/// The possible errors in the process of parsing xml
 public enum XMLModelError: String,Error{
     case null = "The XMLModel is null"
     case invalidXMLSting = "The xml string can't be convert to data using UTF8"
     case fileNameError = "Can't find the name of the file in main bundle"
 }
 
-
+/// `XMLModel` represent the xml data,
+/// The xml data possible an single XMLElement include some children elements,
+/// or a list of XMLElement at the same level.
+/// `XMLModel` also responsible for parsing XML data, xml string and xml file
 public class XMLModel: NSObject {
 
     private enum RawType {
@@ -106,14 +108,23 @@ public class XMLModel: NSObject {
         self.rootValue = rootValue
     }
     
-    private var parentElementStack: Stack?
+    private var parentElementStack: XMLParseStack?
     
     private var parseError: Error?
     
+    /**
+     The core init method,Passing data for parse and config options,can throw errors
+     
+     - parameter data: the xml data for parse
+     
+     - parameter options: the xml parsing options
+     
+     - returns : an XMLModel object or throw a error
+     */
     public init(data: Data, options: ParseOptions = []) throws {
         super.init()
         
-        parentElementStack = Stack()
+        parentElementStack = XMLParseStack()
         
         let root = XMLElement(name: root_name)
         
@@ -129,6 +140,22 @@ public class XMLModel: NSObject {
             throw error
         }else{
             self.rootValue = root
+        }
+    }
+}
+
+extension XMLModel {
+    
+    public override var description: String{
+        switch rawType {
+        case .single:
+            return self.rawSingle.description
+        case .list:
+            var string = [String]()
+            rawlist.forEach{ string.append($0.description) }
+            return string.joined(separator: "\n")
+        case .error:
+            return error.rawValue
         }
     }
 }
@@ -165,15 +192,25 @@ extension XMLModel: XMLParserDelegate{
 }
 
 
-
 extension XMLModel {
 
+    /// Some xml parse options
     public struct ParseOptions: OptionSet{
         public let rawValue: UInt
         public init(rawValue: UInt){ self.rawValue = rawValue }
+        ///
         public static let shouldProcessNamespaces = ParseOptions(rawValue: 0)
     }
 
+    /**
+     The convenience init method,for parse xml string with options,can throw errors
+     
+     - parameter xmlString: the xml string for parse,the string will be convert to data using UTF8
+     
+     - parameter options: the xml parsing options
+     
+     - returns : an XMLModel object or throw a error
+     */
     public convenience init(xmlString: String, options: ParseOptions = []) throws {
         guard let data = xmlString.data(using: .utf8) else {
             throw XMLModelError.invalidXMLSting
@@ -181,6 +218,15 @@ extension XMLModel {
         try self.init(data: data, options: options)
     }
     
+    /**
+     The convenience init method,Passing xml file name for parse and config options
+     
+     - parameter xmlfile: the xml file for parse,the string will be convert to data using UTF8
+ 
+     - parameter options: the xml parsing options
+     
+     - returns : an XMLModel object or throw a error
+     */
     public convenience init(xmlfile name: String, options: ParseOptions = []) throws {
         guard let url = Bundle.main.url(forResource: name, withExtension: "xml") else {
             throw XMLModelError.fileNameError
@@ -189,6 +235,7 @@ extension XMLModel {
         try self.init(data: data, options: options)
     }
     
+    /// Just the wrapper of `init(data: Data, options: ParseOptions = []) throws`,the init method throw error cause crash
     public class func parse(data: Data, options: ParseOptions = []) -> XMLModel{
         do {
             return try XMLModel(data: data, options: options)
@@ -197,6 +244,7 @@ extension XMLModel {
         }
     }
     
+    /// Just the wrapper of `convenience init(xmlString: String, options: ParseOptions = []) throws`,the init method throw error cause crash
     public class func parse(xmlString: String, options: ParseOptions = []) -> XMLModel{
         do {
             return try XMLModel(xmlString: xmlString, options: options)
@@ -205,6 +253,7 @@ extension XMLModel {
         }
     }
     
+    /// Just the wrapper of `convenience init(xmlfile name: String, options: ParseOptions = []) throws`,the init method throw error cause crash
     public class func parse(xmlfile name: String, options: ParseOptions = []) -> XMLModel{
         do {
             return try XMLModel(xmlfile: name, options: options)
@@ -214,6 +263,7 @@ extension XMLModel {
     }
 }
 
+/// subscript for key and index,Inspired by the Array,subscript no optional value
 extension XMLModel{
 
     public subscript(key: String) -> XMLModel {
@@ -250,44 +300,52 @@ extension XMLModel{
             preconditionFailure("There is an error\(error)")
         }
     }
-
-//    public var element: XMLElement{
-//        switch rawType {
-//        case .single:
-//            return rawSingle
-//        case .list:
-//            fatalError("")
-//        case .error:
-//            fatalError("")
-//        }
-//    }
-//
-//    public var elementValue: XMLElement?{
-//        switch rawType {
-//        case .single:
-//            return rawSingle
-//        default:
-//            return nil
-//        }
-//    }
-
+    
+    
 }
 
-extension XMLModel {
 
-    public override var description: String{
+extension XMLModel{
+
+    public var element: XMLElement{
         switch rawType {
         case .single:
-            return self.rawSingle.description
+            return rawSingle
         case .list:
-            var string = [String]()
-            rawlist.forEach{ string.append($0.description) }
-            return string.joined(separator: "\n")
+            fatalError("")
         case .error:
-            return error.rawValue
+            fatalError("")
         }
     }
+
+    public var elementValue: XMLElement?{
+        switch rawType {
+        case .single:
+            return rawSingle
+        default:
+            return nil
+        }
+    }
+    
+    public var text: String{
+        if element.text.isEmpty {
+            fatalError("")
+        }else{
+            return element.text
+        }
+    }
+    
+    public var textValue: String?{
+        if element.text.isEmpty {
+            return nil
+        }else{
+            return element.text
+        }
+    }
+
+    
 }
+
 
 
 

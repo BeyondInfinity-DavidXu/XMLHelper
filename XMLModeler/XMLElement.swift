@@ -1,14 +1,12 @@
 //
 //  XMLElement.swift
-//  XMLModeler
+//  XMLModel
 //
-//  Created by 徐伟亭 on 2017/12/21.
-//  Copyright © 2017年 TerraNova. All rights reserved.
-//
+//  Created by GeekXiaowei on 2017/12/11.
 
 import UIKit
 
-/// Define the XML element
+/// Represent the XML element
 public class XMLElement {
     
     /// Define the XML element attribute

@@ -2,9 +2,7 @@
 //  ViewController.swift
 //  XMLModeler
 //
-//  Created by 徐伟亭 on 2017/12/12.
-//  Copyright © 2017年 TerraNova. All rights reserved.
-//
+//  Created by GeekXiaowei on 2017/12/11.
 
 import UIKit
 
@@ -54,11 +52,6 @@ class ViewController: UIViewController, XMLParserDelegate {
         super.viewDidLoad()
         
         let model = XMLModel.parse(xmlfile: "data_5-23id")
-        
-        
-        
-        
-    
         
     }
     
