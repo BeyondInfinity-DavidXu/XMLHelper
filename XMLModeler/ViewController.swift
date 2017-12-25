@@ -46,24 +46,30 @@ let booksXML = """
 </root>
 """
 
-struct ProductModel: XMLModelable {
-    let serieId: String
-    let bgSelectedImage: String
-    let normalImage: String
+struct Book {
+//    init(decoder xmlModel: XMLModel) {
+//        title = xmlModel["title"]
+//    }
     
-    static func model(_ model: XMLModel) -> ProductModel {
-        return ProductModel(serieId: model["serieId"].text,
-                            bgSelectedImage: model["bgSelectedImage"].text,
-                            normalImage: model["normalImage"].text)
-    }
+    let title: String
+    let price: Double
+    let year: Int
+    var amount: Int?
+    
+    
 }
 
-class ViewController: UIViewController, XMLParserDelegate {
+class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let model = XMLModel.parse(xmlfile: "data_5-23id")
+        
+        let xmlBook = XMLModel.parse(xmlString: booksXML)
+        
+//        let books: [Book] = xmlBook["root"]["books"]["book"]
+        
+        
      
         
     }

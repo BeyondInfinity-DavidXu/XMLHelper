@@ -65,13 +65,13 @@ public enum XMLModelError: String,Error{
 /// `XMLModel` also responsible for parsing XML data, xml string and xml file
 public class XMLModel: NSObject {
 
-    private enum RawType {
+    internal enum RawType {
         case list,single,error
     }
 
-    private var rawType: RawType = .error
+    internal var rawType: RawType = .error
     private var rawlist:[XMLElement] = []
-    private var rawSingle:XMLElement = XMLElement(name: "")
+    internal var rawSingle:XMLElement = XMLElement(name: "")
     private var error: XMLModelError = .null
 
     private var rootValue: Any{
@@ -304,50 +304,6 @@ extension XMLModel{
             preconditionFailure("There is an error\(error)")
         }
     }
-    
-}
-
-
-extension XMLModel{
-
-    public var element: XMLElement{
-        switch rawType {
-        case .single:
-            return rawSingle
-        case .list:
-            fatalError("")
-        case .error:
-            fatalError("")
-        }
-    }
-
-    public var elementValue: XMLElement?{
-        switch rawType {
-        case .single:
-            return rawSingle
-        default:
-            return nil
-        }
-    }
-    
-    public var text: String{
-        if element.text.isEmpty {
-            fatalError("")
-        }else{
-            return element.text
-        }
-    }
-    
-    public var textValue: String?{
-        if element.text.isEmpty {
-            return nil
-        }else{
-            return element.text
-        }
-    }
-
-    
-    
     
 }
 

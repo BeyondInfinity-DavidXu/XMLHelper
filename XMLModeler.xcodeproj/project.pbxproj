@@ -12,7 +12,8 @@
 		05682E821FDFBC5A003BA076 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 05682E801FDFBC5A003BA076 /* Main.storyboard */; };
 		05682E841FDFBC5A003BA076 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 05682E831FDFBC5A003BA076 /* Assets.xcassets */; };
 		05682E871FDFBC5A003BA076 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 05682E851FDFBC5A003BA076 /* LaunchScreen.storyboard */; };
-		05682E8F1FDFBCFF003BA076 /* XMLModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05682E8E1FDFBCFF003BA076 /* XMLModel.swift */; };
+		05682E8F1FDFBCFF003BA076 /* XMLModel_Core.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05682E8E1FDFBCFF003BA076 /* XMLModel_Core.swift */; };
+		059B21611FF09C46001775A8 /* XMLModel_Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 059B21601FF09C46001775A8 /* XMLModel_Extension.swift */; };
 		05EE1D5B1FE0F79600853D17 /* data_5-23id.xml in Resources */ = {isa = PBXBuildFile; fileRef = 05EE1D591FE0F60000853D17 /* data_5-23id.xml */; };
 /* End PBXBuildFile section */
 
@@ -24,7 +25,8 @@
 		05682E831FDFBC5A003BA076 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		05682E861FDFBC5A003BA076 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		05682E881FDFBC5A003BA076 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		05682E8E1FDFBCFF003BA076 /* XMLModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMLModel.swift; sourceTree = "<group>"; };
+		05682E8E1FDFBCFF003BA076 /* XMLModel_Core.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMLModel_Core.swift; sourceTree = "<group>"; };
+		059B21601FF09C46001775A8 /* XMLModel_Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMLModel_Extension.swift; sourceTree = "<group>"; };
 		05EE1D591FE0F60000853D17 /* data_5-23id.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "data_5-23id.xml"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -65,7 +67,8 @@
 				05682E851FDFBC5A003BA076 /* LaunchScreen.storyboard */,
 				05682E881FDFBC5A003BA076 /* Info.plist */,
 				05EE1D591FE0F60000853D17 /* data_5-23id.xml */,
-				05682E8E1FDFBCFF003BA076 /* XMLModel.swift */,
+				05682E8E1FDFBCFF003BA076 /* XMLModel_Core.swift */,
+				059B21601FF09C46001775A8 /* XMLModel_Extension.swift */,
 			);
 			path = XMLModeler;
 			sourceTree = "<group>";
@@ -143,7 +146,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				05682E8F1FDFBCFF003BA076 /* XMLModel.swift in Sources */,
+				05682E8F1FDFBCFF003BA076 /* XMLModel_Core.swift in Sources */,
+				059B21611FF09C46001775A8 /* XMLModel_Extension.swift in Sources */,
 				05682E7F1FDFBC5A003BA076 /* ViewController.swift in Sources */,
 				05682E7D1FDFBC5A003BA076 /* AppDelegate.swift in Sources */,
 			);
