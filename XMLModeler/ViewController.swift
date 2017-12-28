@@ -46,9 +46,6 @@ let booksXML = """
 </root>
 """
 
-
-
-
 struct Book: XMLModelCodable{
 
     let title: String
@@ -57,9 +54,9 @@ struct Book: XMLModelCodable{
     var amount: Int?
     
     static func decode(xmlModel: XMLModel) -> Book {
-        return Book(title: xmlModel["title"].model(),
-                    price: xmlModel["price"].model(),
-                    year: xmlModel["year"].model(),
+        return Book(title : xmlModel["title"].model(),
+                    price : xmlModel["price"].model(),
+                    year  : xmlModel["year"].model(),
                     amount: xmlModel["amount"].model())
     }
 }
@@ -72,20 +69,11 @@ class ViewController: UIViewController {
         let xmlmodel = XMLModel.parse(xmlString: booksXML)
         
         print(xmlmodel)
-        
         print(xmlmodel["root"])
         print(xmlmodel["root"]["books"])
         print(xmlmodel["root"]["books"]["book"])
-        
         let books: [Book] = xmlmodel["root"]["books"]["book"].model()
-        
         print(books)
-        
-        
-    
-        
-        
-        
         
     }
     

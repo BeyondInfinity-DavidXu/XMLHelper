@@ -85,14 +85,14 @@ extension XMLModelError: LocalizedError{
 /// `XMLModel` also responsible for parsing XML data, xml string and xml file
 public class XMLModel: NSObject {
 
-    internal enum RawType {
+    private enum RawType {
         case list,single,error
     }
 
-    internal var rawType: RawType = .error
-    internal var rawlist:[XMLElement] = []
-    internal var rawSingle:XMLElement = XMLElement(name: "")
-    internal var error: XMLModelError = .null
+    private var rawType: RawType = .error
+    private var rawlist:[XMLElement] = []
+    private var rawSingle:XMLElement = XMLElement(name: "")
+    private var error: XMLModelError = .null
 
     private var rootValue: Any{
         get{
@@ -123,7 +123,7 @@ public class XMLModel: NSObject {
         }
     }
     
-    internal init(rootValue: Any) {
+    private init(rootValue: Any) {
         super.init()
         self.rootValue = rootValue
     }
@@ -403,7 +403,7 @@ public class XMLElement {
     /// Indicates that the current element in the element hierarchy
     public var index: Int
     
-    /// The text of the element, if it not exists,the string is empty
+    /// The text of the element, if the text is not exist,the string is empty
     public var text: String = ""
     
     /// The child elements of the element, if it not exists,the array is empty
@@ -487,6 +487,160 @@ extension XMLElement {
 
 
 
+// MARK -
+
+extension XMLModel{
+    
+    /// The element of the current level,none optional value
+    public var element: XMLElement{
+        switch rawType {
+        case .single:
+            return rawSingle
+        case .list:
+            fatalError("Current XMLModel a list of XMLElements ,no element value")
+        case .error:
+            fatalError("XMLModel is an error")
+        }
+    }
+    
+    /// The element of the current level,optional value
+    public var elementValue: XMLElement?{
+        switch rawType {
+        case .single:
+            return rawSingle
+        default:
+            return nil
+        }
+    }
+}
+
+
+public protocol XMLModelCodable{
+    
+    static func decode(xmlModel:XMLModel) -> Self
+}
+
+
+
+extension String: XMLModelCodable{
+    
+    public static func decode(xmlModel: XMLModel) -> String {
+        return xmlModel.element.text
+    }
+}
+
+extension Double: XMLModelCodable{
+    
+    public static func decode(xmlModel: XMLModel) -> Double {
+        if let value = Double(xmlModel.element.text) {
+            return value
+        }else{
+            fatalError("")
+        }
+    }
+}
+
+extension Int: XMLModelCodable{
+    
+    public static func decode(xmlModel: XMLModel) -> Int {
+        if let value = Int(xmlModel.element.text) {
+            return value
+        }else{
+            fatalError("Current ")
+        }
+    }
+}
+
+extension Float: XMLModelCodable{
+    
+    public static func decode(xmlModel: XMLModel) -> Float {
+        if let value = Float(xmlModel.element.text) {
+            return value
+        }else{
+            fatalError("")
+        }
+    }
+    
+    
+}
+
+/// The default array of true value strings,you can change the strings to meet the requirements of the current
+public var Represent_True_Strings = ["true","1","yes"]
+/// The default array of false value strings,you can change the strings to meet the requirements of the current
+public var Represent_False_Strings = ["false","0","no"]
+extension String{
+    /**
+     Convert string to bool value case sensitive.
+     
+     - parameter caseSensitive: default is true
+     - returns: optional bool value
+     */
+    func bool(_ caseSensitive: Bool = true) -> Bool? {
+        if caseSensitive {
+            if Represent_True_Strings.contains(self){
+                return true
+            }else if Represent_False_Strings.contains(self){
+                return false
+            }else{
+                return nil
+            }
+        }else{
+            if Represent_True_Strings.contains(lowercased()){
+                return true
+            }else if Represent_False_Strings.contains(lowercased()){
+                return false
+            }else{
+                return nil
+            }
+        }
+    }
+}
+
+extension Bool: XMLModelCodable{
+    
+    public static func decode(xmlModel: XMLModel) -> Bool {
+        if let bool = xmlModel.element.text.bool() {
+            return bool
+        }else{
+            fatalError()
+        }
+    }
+    
+}
+
+extension XMLModel{
+    
+    func model<T: XMLModelCodable>() -> [T] {
+        if rawType == .error { fatalError() }
+        switch rawType {
+        case .list:
+            return rawlist.map{ T.decode(xmlModel: XMLModel(rootValue:$0)) }
+        default:
+            fatalError()
+        }
+    }
+    
+    func model<T: XMLModelCodable>() -> T {
+        if rawType == .error { fatalError() }
+        switch rawType {
+        case .single:
+            return T.decode(xmlModel: self)
+        default:
+            fatalError()
+        }
+    }
+    
+    func model<T: XMLModelCodable>() -> T? {
+        if rawType == .error { return nil }
+        switch rawType {
+        case .single:
+            return T.decode(xmlModel: self)
+        default:
+            return nil
+        }
+    }
+    
+}
 
 
 
