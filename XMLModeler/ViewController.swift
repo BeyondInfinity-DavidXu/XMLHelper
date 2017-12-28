@@ -42,21 +42,26 @@ let booksXML = """
             <year>1990</year>
             <amount>10</amount>
         </book>
-    <books>
+    </books>
 </root>
 """
 
-struct Book {
-//    init(decoder xmlModel: XMLModel) {
-//        title = xmlModel["title"]
-//    }
-    
+
+
+
+struct Book: XMLModelCodable{
+
     let title: String
     let price: Double
     let year: Int
     var amount: Int?
     
-    
+    static func decode(xmlModel: XMLModel) -> Book {
+        return Book(title: xmlModel["title"].model(),
+                    price: xmlModel["price"].model(),
+                    year: xmlModel["year"].model(),
+                    amount: xmlModel["amount"].model())
+    }
 }
 
 class ViewController: UIViewController {
@@ -64,17 +69,32 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        let xmlmodel = XMLModel.parse(xmlString: booksXML)
         
-        let xmlBook = XMLModel.parse(xmlString: booksXML)
+        print(xmlmodel)
         
-//        let books: [Book] = xmlBook["root"]["books"]["book"]
+        print(xmlmodel["root"])
+        print(xmlmodel["root"]["books"])
+        print(xmlmodel["root"]["books"]["book"])
+        
+        let books: [Book] = xmlmodel["root"]["books"]["book"].model()
+        
+        print(books)
         
         
-     
+    
+        
+        
+        
         
     }
     
     
     
 }
+
+
+
+
+
 

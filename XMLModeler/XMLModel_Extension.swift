@@ -40,9 +40,8 @@ public protocol XMLModelCodable{
     static func decode(xmlModel:XMLModel) -> Self
 }
 
-/**
- 
- */
+
+
 extension String: XMLModelCodable{
     
     public static func decode(xmlModel: XMLModel) -> String {
@@ -50,7 +49,82 @@ extension String: XMLModelCodable{
     }
 }
 
+extension Double: XMLModelCodable{
+    
+    public static func decode(xmlModel: XMLModel) -> Double {
+        if let value = Double(xmlModel.element.text) {
+            return value
+        }else{
+            fatalError("")
+        }
+    }
+}
 
+extension Int: XMLModelCodable{
+    
+    public static func decode(xmlModel: XMLModel) -> Int {
+        if let value = Int(xmlModel.element.text) {
+            return value
+        }else{
+            fatalError("Current ")
+        }
+    }
+}
+
+extension Float: XMLModelCodable{
+    
+    public static func decode(xmlModel: XMLModel) -> Float {
+        if let value = Float(xmlModel.element.text) {
+            return value
+        }else{
+            fatalError("")
+        }
+    }
+    
+    
+}
+
+extension Bool: XMLModelCodable{
+    
+    public static func decode(xmlModel: XMLModel) -> Bool {
+        return Bool(NSString(string: xmlModel.element.text).boolValue)
+    }
+    
+}
+
+extension XMLModel{
+    
+    func model<T: XMLModelCodable>() -> [T] {
+        if rawType == .error { fatalError() }
+        switch rawType {
+        case .list:
+            return rawlist.map{ T.decode(xmlModel: XMLModel(rootValue:$0)) }
+        default:
+            fatalError()
+        }
+    }
+    
+    func model<T: XMLModelCodable>() -> T {
+        if rawType == .error { fatalError() }
+        switch rawType {
+        case .single:
+            return T.decode(xmlModel: self)
+        default:
+            fatalError()
+        }
+    }
+    
+    func model<T: XMLModelCodable>() -> T? {
+        if rawType == .error { return nil }
+        switch rawType {
+        case .single:
+            return T.decode(xmlModel: self)
+        default:
+            return nil
+        }
+    }
+    
+}
 
 
 

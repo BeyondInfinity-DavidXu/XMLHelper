@@ -53,10 +53,30 @@ fileprivate struct XMLParseStack: Stackable {
 }
 
 /// The possible errors in the process of parsing xml
-public enum XMLModelError: String,Error{
-    case null = "The XMLModel is null"
-    case invalidXMLSting = "The xml string can't be convert to data using UTF8"
-    case fileNameError = "Can't find the name of the file in main bundle"
+public enum XMLModelError: Error{
+    /// placeholder error
+    case null
+    case invalidXMLSting
+    case fileNameError(String)
+    case invalidSubscriptKey(String)
+    case invalidSubscriptIndex(String)
+}
+
+extension XMLModelError: LocalizedError{
+    public var errorDescription: String?{
+        switch self {
+        case .null:
+            return "The XMLModel is null"
+        case .invalidXMLSting:
+            return "The xml string can't be convert to data using UTF8"
+        case .fileNameError(let name):
+            return "Can't find the name \"\(name)\" of the file in main bundle"
+        case .invalidSubscriptKey(let description):
+            return description
+        case .invalidSubscriptIndex(let description):
+            return description
+        }
+    }
 }
 
 /// `XMLModel` represent the xml data,
@@ -70,9 +90,9 @@ public class XMLModel: NSObject {
     }
 
     internal var rawType: RawType = .error
-    private var rawlist:[XMLElement] = []
+    internal var rawlist:[XMLElement] = []
     internal var rawSingle:XMLElement = XMLElement(name: "")
-    private var error: XMLModelError = .null
+    internal var error: XMLModelError = .null
 
     private var rootValue: Any{
         get{
@@ -103,7 +123,7 @@ public class XMLModel: NSObject {
         }
     }
     
-    private init(rootValue: Any) {
+    internal init(rootValue: Any) {
         super.init()
         self.rootValue = rootValue
     }
@@ -155,12 +175,12 @@ extension XMLModel {
             rawlist.forEach{ string.append($0.description) }
             return string.joined(separator: "\n")
         case .error:
-            return error.rawValue
+            return error.errorDescription ?? "The error no description"
         }
     }
 }
 
-let root_name = "xml_model_root_name"
+let root_name = "xml_model_custom_root"
 
 extension XMLModel: XMLParserDelegate{
     
@@ -233,7 +253,7 @@ extension XMLModel {
      */
     public convenience init(xmlfile name: String, options: ParseOptions = []) throws {
         guard let url = Bundle.main.url(forResource: name, withExtension: "xml") else {
-            throw XMLModelError.fileNameError
+            throw XMLModelError.fileNameError(name)
         }
         let data = try Data(contentsOf: url)
         try self.init(data: data, options: options)
@@ -267,41 +287,98 @@ extension XMLModel {
     }
 }
 
-/// subscript for key and index,Inspired by the Array,subscript no optional value
-extension XMLModel{
 
+extension XMLModel{
+    
+//    private func isSubscriptKey(_ key: String) -> Bool{
+//        switch rawType {
+//        case .single:
+//            return rawSingle.childElement.contains{ $0.name == key }
+//        default:
+//            return false
+//        }
+//    }
+//
+//    private func canSubscriptIndex(_ index: Int) -> Bool{
+//        switch rawType{
+//        case .list:
+//            return rawlist.count > index
+//        default:
+//            return false
+//        }
+//    }
+//
+//    public subscript(_ key: String) -> XMLModel? {
+//        guard isSubscriptKey(key) else { return nil }
+//        let matchs = rawSingle.childElement.filter{ $0.name == key }
+//        let wrappedMatch = matchs.map { $0.new() }
+//        wrappedMatch.forEach{ $0.thorough{ $0.index -= 1 } }
+//        if wrappedMatch.count == 1 {
+//            return XMLModel(rootValue: wrappedMatch[0])
+//        }else{
+//            return XMLModel(rootValue: wrappedMatch)
+//        }
+//    }
+//
+//    public subscript(_ index: Int) -> XMLModel? {
+//        guard canSubscriptIndex(index) else { return nil }
+//        return XMLModel(rootValue: rawlist[index])
+//    }
+
+    
+    
+    ///
     public subscript(key: String) -> XMLModel {
+        
+        func makeError(description: String) -> XMLModel {
+            let error = XMLModelError.invalidSubscriptKey(description)
+            return XMLModel(rootValue: error)
+        }
+        
         switch rawType{
         case .single:
             let match = rawSingle.childElement.filter{ $0.name == key }
-            let copyMatch = match.map{ $0.copy() as! XMLElement }
+            let copyMatch = match.map{ $0.new() }
             copyMatch.forEach{ $0.thorough{ $0.index -= 1 } }
             if copyMatch.count == 1 {
                 return XMLModel(rootValue: copyMatch[0])
             }else if copyMatch.count > 1 {
                 return XMLModel(rootValue: copyMatch)
             }else{
-                preconditionFailure("The key:\(key) didn't match the element name,check out it")
+                let description = "The key: \"\(key)\" didn't match the element name,check out it"
+                return makeError(description: description)
             }
         case .list:
-            preconditionFailure("Current xml is list,unsupport key:\(key)")
+            let description = "Current xml is list,unsupport key:\(key)"
+            return makeError(description: description)
         default:
-            preconditionFailure("There is an error\(error)")
+            let description = "There is an error\(error)"
+            return makeError(description: description)
         }
     }
-
+    
+    
     public subscript(index: Int) -> XMLModel{
+        
+        func makeError(description: String) -> XMLModel {
+            let error = XMLModelError.invalidSubscriptIndex(description)
+            return XMLModel(rootValue: error)
+        }
+        
         switch rawType{
         case .list:
             if rawlist.count > index{
                 return XMLModel(rootValue: rawlist[index])
             }else{
-                preconditionFailure("The index:\(index) out of index")
+                let description = "The index:\(index) out of index"
+                return makeError(description: description)
             }
         case .single:
-            preconditionFailure("Current xml is not a list,unsupport index:\(index)")
+            let description = "Current xml is not a list,unsupport index:\(index)"
+            return makeError(description: description)
         case .error:
-            preconditionFailure("There is an error\(error)")
+            let description = "Current XMLModel is an error\(error)"
+            return makeError(description: description)
         }
     }
     
@@ -396,15 +473,16 @@ extension XMLElement: CustomStringConvertible{
 }
 
 
-extension XMLElement: NSCopying{
-    
-    public func copy(with zone: NSZone? = nil) -> Any {
+extension XMLElement {
+    /// The new func alloc a new XMLElement
+    public func new() -> XMLElement {
         let element = XMLElement(name: name, index: index)
         element.text = text
         element.attributes = attributes
-        element.childElement = childElement.map{ $0.copy() as! XMLElement }
+        element.childElement = childElement.map{ $0.new() }
         return element
     }
+    
 }
 
 
