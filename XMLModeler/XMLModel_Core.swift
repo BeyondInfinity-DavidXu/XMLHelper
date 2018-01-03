@@ -7,30 +7,30 @@
 import UIKit
 
 /// Can the element out and into the stack
-fileprivate protocol Stackable {
-    
-    associatedtype Element
-    
-    mutating func push(_ element:Element)
-    
-    mutating func pop() -> Element?
-    
-    var top: Element? { get }
-}
+//fileprivate protocol Stackable {
+//
+//    associatedtype Element
+//
+//    mutating func push(_ element:Element)
+//
+//    mutating func pop() -> Element?
+//
+//    var top: Element? { get }
+//}
 
 /// A stack for parse the xml elemnt
-fileprivate struct XMLParseStack: Stackable {
+fileprivate struct Stack<Element> {
     
-    private var items: [XMLElement] = []
+    private var items: [Element] = []
     
     /// Push new element into the stack
-    fileprivate mutating func push(_ element: XMLElement) {
+    fileprivate mutating func push(_ element: Element) {
         items.append(element)
     }
     
     @discardableResult
     /// Pop the last element out the stack and return the last element if current stack have one
-    fileprivate mutating func pop() -> XMLElement? {
+    fileprivate mutating func pop() -> Element? {
         if items.isEmpty {
             return nil
         }else{
@@ -39,7 +39,7 @@ fileprivate struct XMLParseStack: Stackable {
     }
     
     /// The top element of the stack if the cyrrent stack have one
-    fileprivate var top: XMLElement?{ return items.last }
+    fileprivate var top: Element?{ return items.last }
     
     /// Remove all element from stack and with out keeping capacity
     fileprivate mutating func removeAll(){
@@ -51,6 +51,7 @@ fileprivate struct XMLParseStack: Stackable {
         return items.count
     }
 }
+
 
 /// The possible errors in the process of parsing xml
 public enum XMLModelError: Error{
@@ -124,13 +125,22 @@ public class XMLModel: NSObject {
     }
     
     private init(rootValue: Any) {
+        self.options = []
         super.init()
         self.rootValue = rootValue
     }
     
-    private var parentElementStack: XMLParseStack?
+    private var parentElementStack: Stack<XMLElement>?
     
     private var parseError: Error?
+    
+    // MARK: - Converte to json
+    private var arrayStack: [[String: Any]] = []
+    private var selfText: String = ""
+    private var root: [String: Any] = [:]
+    private var currentLevel: Int = 0
+    
+    private let options: ParseOptions
     
     /**
      The core init method,Passing data for parse and config options,can throw errors
@@ -142,15 +152,19 @@ public class XMLModel: NSObject {
      - returns : an XMLModel object or throw a error
      */
     public init(data: Data, options: ParseOptions = []) throws {
+        self.options = options
         super.init()
-        
-        parentElementStack = XMLParseStack()
+        parentElementStack = Stack<XMLElement>()
         
         let root = XMLElement(name: root_name)
         
         parentElementStack?.push(root)
         
         let parser = XMLParser(data: data)
+        
+        if options.contains(ParseOptions.shouldProcessNamespaces) {
+            parser.shouldProcessNamespaces = true
+        }
         
         parser.delegate = self
         
@@ -184,6 +198,39 @@ let root_name = "xml_model_custom_root"
 
 extension XMLModel: XMLParserDelegate{
     
+    private var toJson: Bool{
+        return options.contains(.shouldConvertToJson)
+    }
+    
+    // MARK: - xml to json
+    public func parserDidStartDocument(_ parser: XMLParser) {
+        
+        guard toJson else { return }
+        currentLevel = 0
+        
+        root = [:]
+        
+        arrayStack = [root]
+        
+        selfText = ""
+    }
+    
+    // MARK: - xml to json
+    public func parserDidEndDocument(_ parser: XMLParser) {
+        guard toJson else { return }
+        arrayStack.removeLast()
+        root = arrayStack.first!
+    }
+    
+    private var closeTop: [String: Any]{
+        get{
+            return arrayStack[currentLevel - 1]
+        }
+        set{
+            arrayStack[currentLevel - 1] = newValue
+        }
+    }
+    
     /// Do not sent message to the menthod
     public func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String] = [:]) {
         
@@ -194,18 +241,111 @@ extension XMLModel: XMLParserDelegate{
         let childNode = currentNode.addChildElement(name:elementName, index:cutrrentIndex, attributes: attributeDict)
         
         parentElementStack?.push(childNode)
+        
+        // MARK: - xml to json
+        guard toJson else { return }
+        currentLevel += 1
+        
+        if arrayStack.count == currentLevel {
+            let empty = [String: Any]()
+            
+            arrayStack.append(empty)
+            
+            if (selfText as NSString).length > 0{
+                var temp = closeTop
+                temp["textkey"] = selfText
+                closeTop = temp
+                selfText = ""
+            }
+        }
+        
     }
     
     /// Do not sent message to the menthod
     public func parser(_ parser: XMLParser, foundCharacters string: String) {
+        
         if let first = string.first,first != "\n" {
             parentElementStack?.top?.text += string
+        }
+        
+        // MARK: - xml to json
+        guard toJson else { return }
+        let characterSet = CharacterSet.whitespacesAndNewlines
+        let text = string.trimmingCharacters(in: characterSet)
+        selfText.append(text)
+    }
+    
+    private var arraylast: [String: Any] {
+        get{
+            return arrayStack[currentLevel]
+        }
+        set{
+            arrayStack[currentLevel] = newValue
         }
     }
     
     /// Do not sent message to the menthod
     public func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
+    
         parentElementStack?.pop()
+        
+        // MARK: - xml to json
+        guard toJson else { return }
+        if arraylast.count == 0 {
+            
+            if let value = closeTop[elementName]{
+
+                if value is [String] {
+                    var temp = (value as! [String])
+                    temp.append(selfText)
+                    closeTop[elementName] = temp
+                }else{
+                    
+                    let array = [closeTop[elementName],selfText]
+                    var temp = closeTop
+                    temp[elementName] = array
+                    closeTop = temp
+
+                }
+            }else{
+                var temp = closeTop
+                temp[elementName] = selfText
+                closeTop = temp
+            }
+            
+            selfText = ""
+            
+        }else{
+            
+            if (selfText as NSString).length > 0 {
+                var temp = arraylast
+                temp["textkey"] = selfText
+                arraylast = temp
+                selfText = ""
+            }
+            
+            if let value = closeTop[elementName]{
+                
+                if value is [[String: Any]]{
+                    var temp = closeTop[elementName] as! [[String: Any]]
+                    temp.append(arraylast)
+                    closeTop[elementName] = temp
+                }else if value is [String: Any] {
+                    let array = [value,arraylast]
+                    var temp = closeTop
+                    temp[elementName] = array
+                    closeTop = temp
+                }
+                
+            }else{
+                var temp = closeTop
+                temp[elementName] = arraylast
+                closeTop = temp
+            }
+            
+            arrayStack.remove(at: currentLevel)
+        }
+        currentLevel -= 1
     }
     
     /// Do not sent message to the menthod
@@ -215,6 +355,11 @@ extension XMLModel: XMLParserDelegate{
     
 }
 
+extension XMLModel{
+    
+    
+    
+}
 
 extension XMLModel {
 
@@ -222,8 +367,10 @@ extension XMLModel {
     public struct ParseOptions: OptionSet{
         public let rawValue: UInt
         public init(rawValue: UInt){ self.rawValue = rawValue }
-        ///
+        /// This option can process the xml name spaces
         public static let shouldProcessNamespaces = ParseOptions(rawValue: 0)
+        /// Convert the xml to json,you can read the json
+        public static let shouldConvertToJson = ParseOptions(rawValue: 1)
     }
 
     /**
@@ -325,9 +472,6 @@ extension XMLModel{
 //        return XMLModel(rootValue: rawlist[index])
 //    }
 
-    
-    
-    ///
     public subscript(key: String) -> XMLModel {
         
         func makeError(description: String) -> XMLModel {
@@ -487,8 +631,6 @@ extension XMLElement {
 
 
 
-// MARK -
-
 extension XMLModel{
     
     /// The element of the current level,none optional value
@@ -515,54 +657,12 @@ extension XMLModel{
 }
 
 
-public protocol XMLModelCodable{
-    
-    static func decode(xmlModel:XMLModel) -> Self
-}
 
-
-
-extension String: XMLModelCodable{
-    
-    public static func decode(xmlModel: XMLModel) -> String {
-        return xmlModel.element.text
-    }
-}
-
-extension Double: XMLModelCodable{
-    
-    public static func decode(xmlModel: XMLModel) -> Double {
-        if let value = Double(xmlModel.element.text) {
-            return value
-        }else{
-            fatalError("")
-        }
-    }
-}
-
-extension Int: XMLModelCodable{
-    
-    public static func decode(xmlModel: XMLModel) -> Int {
-        if let value = Int(xmlModel.element.text) {
-            return value
-        }else{
-            fatalError("Current ")
-        }
-    }
-}
-
-extension Float: XMLModelCodable{
-    
-    public static func decode(xmlModel: XMLModel) -> Float {
-        if let value = Float(xmlModel.element.text) {
-            return value
-        }else{
-            fatalError("")
-        }
-    }
-    
-    
-}
+/// 最后一部分是转换模型
+/// 下面这种方式来自 SWXMLHash
+/// 针对比较小一点的数据模型还好，如果数据模型比较大，这种方式的写法非常繁琐
+/// 上面提供了将xml转换成json数据选项
+/// 可以将xml先准换成json再使用标准库提供的转模型方法进行转换
 
 /// The default array of true value strings,you can change the strings to meet the requirements of the current
 public var Represent_True_Strings = ["true","1","yes"]
@@ -596,87 +696,98 @@ extension String{
     }
 }
 
-extension Bool: XMLModelCodable{
-    
-    public static func decode(xmlModel: XMLModel) -> Bool {
-        if let bool = xmlModel.element.text.bool() {
-            return bool
-        }else{
-            fatalError()
-        }
-    }
-    
-}
-
-extension XMLModel{
-    
-    func model<T: XMLModelCodable>() -> [T] {
-        if rawType == .error { fatalError() }
-        switch rawType {
-        case .list:
-            return rawlist.map{ T.decode(xmlModel: XMLModel(rootValue:$0)) }
-        default:
-            fatalError()
-        }
-    }
-    
-    func model<T: XMLModelCodable>() -> T {
-        if rawType == .error { fatalError() }
-        switch rawType {
-        case .single:
-            return T.decode(xmlModel: self)
-        default:
-            fatalError()
-        }
-    }
-    
-    func model<T: XMLModelCodable>() -> T? {
-        if rawType == .error { return nil }
-        switch rawType {
-        case .single:
-            return T.decode(xmlModel: self)
-        default:
-            return nil
-        }
-    }
-    
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//public protocol XMLModelCodable{
+//
+//    static func decode(xmlModel:XMLModel) -> Self
+//}
+//
+//
+//
+//extension String: XMLModelCodable{
+//
+//    public static func decode(xmlModel: XMLModel) -> String {
+//        return xmlModel.element.text
+//    }
+//}
+//
+//extension Double: XMLModelCodable{
+//
+//    public static func decode(xmlModel: XMLModel) -> Double {
+//        if let value = Double(xmlModel.element.text) {
+//            return value
+//        }else{
+//            fatalError("")
+//        }
+//    }
+//}
+//
+//extension Int: XMLModelCodable{
+//
+//    public static func decode(xmlModel: XMLModel) -> Int {
+//        if let value = Int(xmlModel.element.text) {
+//            return value
+//        }else{
+//            fatalError("Current ")
+//        }
+//    }
+//}
+//
+//extension Float: XMLModelCodable{
+//
+//    public static func decode(xmlModel: XMLModel) -> Float {
+//        if let value = Float(xmlModel.element.text) {
+//            return value
+//        }else{
+//            fatalError("")
+//        }
+//    }
+//
+//
+//}
+//
+//extension Bool: XMLModelCodable{
+//
+//    public static func decode(xmlModel: XMLModel) -> Bool {
+//        if let bool = xmlModel.element.text.bool() {
+//            return bool
+//        }else{
+//            fatalError()
+//        }
+//    }
+//
+//}
+//
+//extension XMLModel{
+//
+//    func model<T: XMLModelCodable>() -> [T] {
+//        if rawType == .error { fatalError() }
+//        switch rawType {
+//        case .list:
+//            return rawlist.map{ T.decode(xmlModel: XMLModel(rootValue:$0)) }
+//        default:
+//            fatalError()
+//        }
+//    }
+//
+//    func model<T: XMLModelCodable>() -> T {
+//        if rawType == .error { fatalError() }
+//        switch rawType {
+//        case .single:
+//            return T.decode(xmlModel: self)
+//        default:
+//            fatalError()
+//        }
+//    }
+//
+//    func model<T: XMLModelCodable>() -> T? {
+//        if rawType == .error { return nil }
+//        switch rawType {
+//        case .single:
+//            return T.decode(xmlModel: self)
+//        default:
+//            return nil
+//        }
+//    }
+//
+//}
 
