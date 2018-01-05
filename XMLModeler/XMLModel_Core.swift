@@ -7,16 +7,16 @@
 import UIKit
 
 /// Can the element out and into the stack
-//fileprivate protocol Stackable {
-//
-//    associatedtype Element
-//
-//    mutating func push(_ element:Element)
-//
-//    mutating func pop() -> Element?
-//
-//    var top: Element? { get }
-//}
+fileprivate protocol Stackable {
+
+    associatedtype Element
+
+    mutating func push(_ element:Element)
+
+    mutating func pop() -> Element?
+
+    var top: Element? { get }
+}
 
 /// A stack for parse the xml elemnt
 fileprivate struct Stack<Element> {
@@ -357,8 +357,9 @@ extension XMLModel: XMLParserDelegate{
 
 extension XMLModel{
     
-    
-    
+    var jsonDictionary: [String: Any]{
+        return root
+    }
 }
 
 extension XMLModel {
@@ -399,7 +400,7 @@ extension XMLModel {
      - returns : an XMLModel object or throw a error
      */
     public convenience init(xmlfile name: String, options: ParseOptions = []) throws {
-        guard let url = Bundle.main.url(forResource: name, withExtension: "xml") else {
+        guard let url = Bundle.main.url(forResource: name, withExtension: nil) else {
             throw XMLModelError.fileNameError(name)
         }
         let data = try Data(contentsOf: url)
