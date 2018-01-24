@@ -7,16 +7,24 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		051E04972018230A001F53EA /* XMLElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 051E04962018230A001F53EA /* XMLElement.swift */; };
+		051E0499201823D3001F53EA /* XMLHelperDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 051E0498201823D3001F53EA /* XMLHelperDelegate.swift */; };
+		051E0565201827C5001F53EA /* 0P00000BMV.xml in Resources */ = {isa = PBXBuildFile; fileRef = 051E04FE201827C5001F53EA /* 0P00000BMV.xml */; };
+		051E0566201827C5001F53EA /* 0P0000JQQC.xml in Resources */ = {isa = PBXBuildFile; fileRef = 051E04FF201827C5001F53EA /* 0P0000JQQC.xml */; };
 		05682E7D1FDFBC5A003BA076 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05682E7C1FDFBC5A003BA076 /* AppDelegate.swift */; };
 		05682E7F1FDFBC5A003BA076 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05682E7E1FDFBC5A003BA076 /* ViewController.swift */; };
 		05682E821FDFBC5A003BA076 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 05682E801FDFBC5A003BA076 /* Main.storyboard */; };
 		05682E841FDFBC5A003BA076 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 05682E831FDFBC5A003BA076 /* Assets.xcassets */; };
 		05682E871FDFBC5A003BA076 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 05682E851FDFBC5A003BA076 /* LaunchScreen.storyboard */; };
-		05682E8F1FDFBCFF003BA076 /* XMLModel_Core.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05682E8E1FDFBCFF003BA076 /* XMLModel_Core.swift */; };
+		05682E8F1FDFBCFF003BA076 /* XMLHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05682E8E1FDFBCFF003BA076 /* XMLHelper.swift */; };
 		05EE1D5B1FE0F79600853D17 /* data_5-23id.xml in Resources */ = {isa = PBXBuildFile; fileRef = 05EE1D591FE0F60000853D17 /* data_5-23id.xml */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		051E04962018230A001F53EA /* XMLElement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMLElement.swift; sourceTree = "<group>"; };
+		051E0498201823D3001F53EA /* XMLHelperDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMLHelperDelegate.swift; sourceTree = "<group>"; };
+		051E04FE201827C5001F53EA /* 0P00000BMV.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = 0P00000BMV.xml; sourceTree = "<group>"; };
+		051E04FF201827C5001F53EA /* 0P0000JQQC.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = 0P0000JQQC.xml; sourceTree = "<group>"; };
 		05682E791FDFBC5A003BA076 /* XMLModeler.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XMLModeler.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		05682E7C1FDFBC5A003BA076 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		05682E7E1FDFBC5A003BA076 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -24,7 +32,7 @@
 		05682E831FDFBC5A003BA076 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		05682E861FDFBC5A003BA076 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		05682E881FDFBC5A003BA076 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		05682E8E1FDFBCFF003BA076 /* XMLModel_Core.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMLModel_Core.swift; sourceTree = "<group>"; };
+		05682E8E1FDFBCFF003BA076 /* XMLHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMLHelper.swift; sourceTree = "<group>"; };
 		05EE1D591FE0F60000853D17 /* data_5-23id.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "data_5-23id.xml"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -39,6 +47,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		051E049A201827C5001F53EA /* fund_detail_data */ = {
+			isa = PBXGroup;
+			children = (
+				051E04FE201827C5001F53EA /* 0P00000BMV.xml */,
+				051E04FF201827C5001F53EA /* 0P0000JQQC.xml */,
+			);
+			path = fund_detail_data;
+			sourceTree = "<group>";
+		};
 		05682E701FDFBC5A003BA076 = {
 			isa = PBXGroup;
 			children = (
@@ -65,7 +82,10 @@
 				05682E851FDFBC5A003BA076 /* LaunchScreen.storyboard */,
 				05682E881FDFBC5A003BA076 /* Info.plist */,
 				05EE1D591FE0F60000853D17 /* data_5-23id.xml */,
-				05682E8E1FDFBCFF003BA076 /* XMLModel_Core.swift */,
+				05682E8E1FDFBCFF003BA076 /* XMLHelper.swift */,
+				051E04962018230A001F53EA /* XMLElement.swift */,
+				051E0498201823D3001F53EA /* XMLHelperDelegate.swift */,
+				051E049A201827C5001F53EA /* fund_detail_data */,
 			);
 			path = XMLModeler;
 			sourceTree = "<group>";
@@ -130,9 +150,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				05EE1D5B1FE0F79600853D17 /* data_5-23id.xml in Resources */,
+				051E0565201827C5001F53EA /* 0P00000BMV.xml in Resources */,
 				05682E871FDFBC5A003BA076 /* LaunchScreen.storyboard in Resources */,
 				05682E841FDFBC5A003BA076 /* Assets.xcassets in Resources */,
 				05682E821FDFBC5A003BA076 /* Main.storyboard in Resources */,
+				051E0566201827C5001F53EA /* 0P0000JQQC.xml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -143,8 +165,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				05682E8F1FDFBCFF003BA076 /* XMLModel_Core.swift in Sources */,
+				05682E8F1FDFBCFF003BA076 /* XMLHelper.swift in Sources */,
 				05682E7F1FDFBC5A003BA076 /* ViewController.swift in Sources */,
+				051E04972018230A001F53EA /* XMLElement.swift in Sources */,
+				051E0499201823D3001F53EA /* XMLHelperDelegate.swift in Sources */,
 				05682E7D1FDFBC5A003BA076 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -283,6 +307,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 75RSBKR4HQ;
 				INFOPLIST_FILE = XMLModeler/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
