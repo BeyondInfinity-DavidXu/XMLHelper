@@ -6,6 +6,7 @@
 
 import UIKit
 
+
 class ViewController: UIViewController {
     
     var stack = XMLHelperDelegate.Stack<String>()
@@ -14,18 +15,25 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         
+        
+        
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         
         parserTest()
         
-        
     }
     
     func parserTest() {
         
-        _ = try? XMLHelper(xmlfile: "0P0000UIO4")
+        let helper = try! XMLHelper(xmlfile: "data_5-23id")
+        
+        let element = helper["root"].element
+        element.removeEmptyElements()
+        
+        print(element.dictionary)
+        
     }
     
     

@@ -279,8 +279,19 @@ extension XMLHelper{
         case .single:
             return rawSingle
         case .list:
-            fatalError("Current XMLModel a list of XMLElements ,no element value")
+            fatalError("Current XMLModel is a list of XMLElements ,no element value")
         case .error:
+            fatalError("XMLModel is an error")
+        }
+    }
+    
+    public var elements: [XMLElement]{
+        switch rawType {
+        case .list:
+            return rawlist
+        case .single:
+            fatalError("Current XMLModel  of XMLElements ,no element value")
+        default:
             fatalError("XMLModel is an error")
         }
     }

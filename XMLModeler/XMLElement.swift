@@ -72,6 +72,11 @@ public class XMLElement: CustomStringConvertible{
         childElements.forEach{ $0.thorough(operation: operation) }
     }
     
+    public func removeEmptyElements(){
+        childElements = childElements.filter{ !($0.text.isEmpty && $0.childElements.isEmpty) }
+        childElements.forEach{ $0.removeEmptyElements() }
+    }
+    
     /// The xml description
     public var description: String{
         
@@ -102,6 +107,17 @@ public class XMLElement: CustomStringConvertible{
         copy.text = text
         copy.childElements = childElements.map{ $0.copy }
         return copy
+    }
+    
+    ///
+    public var dictionary: [String: Any]{
+        if childElements.isEmpty {
+            return [name: text]
+        }else if childElements.count == 1{
+            return [name: childElements.first!.dictionary]
+        }else{
+            return [name: childElements.map{ $0.dictionary }]
+        }
     }
     
 }
