@@ -29,8 +29,11 @@ class ViewController: UIViewController {
         
         let helper = try! XMLHelper(xmlfile: "data_5-23id")
         
+        
+        
         let element = helper["root"].element
         element.removeEmptyElements()
+        print(element)
         
         print(element.dictionary)
         
