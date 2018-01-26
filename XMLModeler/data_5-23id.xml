@@ -5,14 +5,4 @@
 			<bgSelectedImage></bgSelectedImage>
 			<normalImage>seriesacqua1</normalImage>
 		</root_line>
-        <root_line>
-            <serieId>s1</serieId>
-            <bgSelectedImage>womenblank</bgSelectedImage>
-            <normalImage>seriesacqua1</normalImage>
-        </root_line>
-        <root_line>
-            <serieId>s1</serieId>
-            <bgSelectedImage>womenblank</bgSelectedImage>
-            <normalImage>seriesacqua1</normalImage>
-        </root_line>
 	</root>

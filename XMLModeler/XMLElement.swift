@@ -109,14 +109,26 @@ public class XMLElement: CustomStringConvertible{
         return copy
     }
     
+    
     /// The interface Convert to json
-    public var dictionary: [String: Any]{
+    public func dictionary(specify arrayKeys: [String]) -> [String: Any]{
         if childElements.isEmpty {
             return [name: text]
         }else if childElements.count == 1{
-            return [name: childElements.first!.dictionary]
+            
+            let dictElement = childElements[0].dictionary(specify: arrayKeys)
+            
+            let keys = [String](dictElement.keys)
+            
+            if keys.count == 1{
+                if arrayKeys.contains(keys[0]){
+                    return [name: [dictElement]]
+                }
+            }
+            
+            return [name: dictElement]
         }else{
-            let dicts = childElements.map{ $0.dictionary }
+            let dicts = childElements.map{ $0.dictionary(specify: arrayKeys) }
             
             var dict: [String: Any] = [:]
             

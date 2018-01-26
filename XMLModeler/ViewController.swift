@@ -29,13 +29,11 @@ class ViewController: UIViewController {
         
         let helper = try! XMLHelper(xmlfile: "data_5-23id")
         
-        
-        
         let element = helper["root"].element
         element.removeEmptyElements()
         print(element)
         
-        print(element.dictionary)
+        print(element.dictionary(specify: ["root_line"]))
         
     }
     
@@ -43,7 +41,11 @@ class ViewController: UIViewController {
 }
 
 
-
+let string = """
+["root":
+    [["root_line":["normalImage": "seriesacqua1", "serieId": "s1"]]]
+]
+"""
 
 
 
